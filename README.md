@@ -39,8 +39,8 @@ to `localhost:8080`.
 
 > **Note**
 > For simplicity sake you can skip this step altogether and run the sample using port 80,
-> but this will require running it as root using `sudo` - which for obvious security reason
-> we cannot neither recommend nor endorse.
+> but this will require running it as root using `sudo` - which for obvious security reasons
+> we can neither recommend nor endorse.
 
 You can generate your own widget code, but there is one already in `basic-sample.go`, which is configurable
 to use your own bot name and URLs.
