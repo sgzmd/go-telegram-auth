@@ -9,19 +9,20 @@ import (
 )
 
 const (
-	TelegramCookie = "tg_auth"
-
-	CheckAuthPage = "/check-auth"
-	AuthPage      = "/auth"
-	DefaultPort   = "8080"
-
-	// Domain TODO: change to the domain you configured (see the docs)
-	Domain = "tgauth.com"
-
 	// BotName TODO: CHANGE THIS TO YOUR OWN
 	BotName = "sgzmd_tgauth_bot"
 
-	Html = `<!DOCTYPE html>
+	// Domain TODO: change to the domain you configured or leave the default if you followed the docs.
+	Domain = "tgauth.com"
+
+	// Constants below can be left alone.
+
+	TelegramCookie = "tg_auth"
+	HostName       = "tgauth.com"
+	CheckAuthPage  = "/check-auth"
+	AuthPage       = "/auth"
+	DefaultPort    = "8080"
+	Html           = `<!DOCTYPE html>
 <html><head><title>Go Web Server</title></head>
 <body><h1>Go Web Server</h1>
 <h1>Hello, anonymous!</h1>
@@ -47,7 +48,7 @@ func main() {
 	http.HandleFunc(AuthPage, HandleLoginPage)
 	http.HandleFunc("/", HandleIndexPage)
 
-	e := http.ListenAndServe("tgauth.com:"+DefaultPort, nil)
+	e := http.ListenAndServe(HostName+DefaultPort, nil)
 	if e != nil {
 		panic(e)
 	}
