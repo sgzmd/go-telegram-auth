@@ -17,9 +17,9 @@ documentation, however limited it is. I strongly encourage you to understand it 
 Follow the steps at the Telegram page above to create your own Telegram bot which will be used for
 authentication. Make sure to store bot token - you'll need it later!
 
-Note, that when using `/setdomain` with Telegram bot it will refuse localhost domains - making testing
-significantly harder. Furthermore, it clearly doesn't like custom ports (i.e. not 80/443). Here's how I
-worked around both limitations:
+> **Note** When using `/setdomain` with Telegram bot it will refuse localhost domains - making testing
+> significantly harder. Furthermore, it clearly doesn't like custom ports (i.e. not 80/443). Here's how I
+> worked around both limitations:
 
 1. Set custom host in your system to point to `127.0.0.1`. On Linux/Mac it will be file named `/etc/hosts`;
    on Windows it's `c:\windows\system32\drivers\etc\hosts`. Add an entry like: `127.0.0.1 tgauth.com` - I used domain
