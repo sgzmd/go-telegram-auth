@@ -48,7 +48,7 @@ func main() {
 	http.HandleFunc(AuthPage, HandleLoginPage)
 	http.HandleFunc("/", HandleIndexPage)
 
-	e := http.ListenAndServe(HostName+DefaultPort, nil)
+	e := http.ListenAndServe(HostName+":"+DefaultPort, nil)
 	if e != nil {
 		panic(e)
 	}
