@@ -1,4 +1,4 @@
-module go-telegram-auth
+module github.com/sgzmd/go-telegram-auth
 
 go 1.18
 
