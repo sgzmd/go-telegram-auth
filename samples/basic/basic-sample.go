@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"go-telegram-auth/tgauth"
+	"github.com/sgzmd/go-telegram-auth/tgauth"
 	"html/template"
 	"log"
 	"net/http"
