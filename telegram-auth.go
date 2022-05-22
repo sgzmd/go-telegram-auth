@@ -21,7 +21,7 @@ type TelegramAuth struct {
 // Checks if the user has successfully logged in with Telegram. It will return the
 // json string of the user data if the user is logged in, otherwise it will return error.
 func (t TelegramAuth) checkAuth(params map[string][]string) (map[string][]string, error) {
-	expectedHash := calculateVerificationHash(params, t)
+	expectedHash := calculateVerificationHash(params, t.BotToken)
 
 	checkHash := params["hash"][0]
 
