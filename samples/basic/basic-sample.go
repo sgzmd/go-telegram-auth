@@ -2,16 +2,14 @@ package main
 
 import (
 	"flag"
-	"github.com/sgzmd/go-telegram-auth/tgauth"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/sgzmd/go-telegram-auth/tgauth"
 )
 
 const (
-	// BotName TODO: CHANGE THIS TO YOUR OWN
-	BotName = "sgzmd_tgauth_bot"
-
 	// Domain TODO: change to the domain you configured or leave the default if you followed the docs.
 	Domain = "tgauth.com"
 
@@ -32,16 +30,20 @@ const (
 
 var TgAuthKey string
 var Auth tgauth.TelegramAuth
+var BotName string
 
 func main() {
 	tgapi := flag.String("telegram_api_key", "", "Telegram API key")
+	botName := flag.String("bot_name", "", "Telegram bot name")
 	flag.Parse()
 
-	if *tgapi == "" {
-		panic("Telegram API key is required")
+	if *tgapi == "" || *botName == "" {
+		panic("Telegram API key and bot name are required")
 	}
 
 	TgAuthKey = *tgapi
+	BotName = *botName
+
 	Auth = tgauth.NewTelegramAuth(TgAuthKey, AuthPage, CheckAuthPage)
 
 	http.HandleFunc(CheckAuthPage, HandleAuth)

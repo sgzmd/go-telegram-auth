@@ -46,30 +46,17 @@ You can generate your own widget code, but there is one already in `basic-sample
 to use your own bot name and URLs.
 
 ## Preparing the sample
-Sample code can be largely run as is, with only two modifications:
+Sample code can be largely run as is. You may need to modify constant `Domain` if you've used a different domain name in the steps above.
 
-```go
-package main
-
-// ...
-
-const (
-   // BotName -- You will **most definitely need** to change this to your own bot name 
-   BotName = "sgzmd_tgauth_bot"
-
-   // Domain -- If you have chosen a different domain in the step above, make sure to update it here
-   Domain = "tgauth.com"
-)
-```
 
 You can now run the code as follows:
 
 ```shell
 go build -o sample samples/basic/basic-sample.go
-./sample -telegram_api_key=<your-telegram-api-key>
+./sample -telegram_api_key=<your-telegram-api-key> -bot_name=<your-bot-name>
 ```
 
-Substitute `<your-telegram-api-key>` to the one provided by @BotFather and you are good to go.
+Substitute `<your-telegram-api-key>` and `<your-bot-name>` to your own ones and you are good to go.
 
 ## How does it work
 
