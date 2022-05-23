@@ -1,5 +1,7 @@
 package tgauth
 
+// TODO: improve testing coverage significantly.
+
 import (
 	a "github.com/stretchr/testify/assert"
 	"net/http/httptest"
