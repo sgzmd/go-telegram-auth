@@ -24,6 +24,8 @@ type TelegramAuth struct {
 	AuthUrl            string
 	CheckAuthUrl       string
 	TelegramCookieName string
+
+	// After how long should the user be logged out? Defaults to 24 hours.
 	ExpireTime         time.Duration
 }
 
