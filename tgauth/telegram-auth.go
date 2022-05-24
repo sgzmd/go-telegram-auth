@@ -62,7 +62,7 @@ func (t TelegramAuth) CheckAuth(params map[string][]string) (bool, error) {
 
 	// User must login every 24 hours
 	if timestamp < (time.Now().Unix() - int64(24*time.Hour.Seconds())) {
-		return false, fmt.Errorf("User is not logged in for more than 24 hours")
+		return false, fmt.Errorf("user is not logged in for more than 24 hours")
 	}
 
 	return true, nil
