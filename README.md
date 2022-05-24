@@ -1,5 +1,7 @@
 # go-telegram-auth: web authentication with Telegram
 
+![CI status](https://github.com/sgzmd/go-telegram-auth/actions/workflows/go.yml/badge.svg)
+
 This library allows for simple web page authentication with Telegram. 
 
 Documentation is WIP, but please check [this example](https://github.com/sgzmd/tgauth) which 
