@@ -19,7 +19,20 @@ const (
 	DefaultCookieName = "tg_auth"
 )
 
-type TelegramAuth struct {
+// Main interface for Telegram authentication.
+type TelegramAuth interface {
+	// CheckAuth checks for a given set of params (usually from a request) if the user has successfully logged in
+	// with Telegram. Returns true/false or error if invalid data.
+	CheckAuth(params map[string][]string) (bool, error)
+
+	// GetParamsFromCookie returns the params from the cookie or error if no cookie present
+	GetParamsFromCookie(req *http.Request) (map[string][]string, error)
+
+	// SetCookie sets the cookie for the user from the params
+	SetCookie(w http.ResponseWriter, params map[string][]string) error
+}
+
+type TelegramAuthImpl struct {
 	BotToken           string
 	AuthUrl            string
 	CheckAuthUrl       string
@@ -33,7 +46,7 @@ type TelegramAuth struct {
 // 	checkAuthUrl: The URL to redirect for the actual authentication (should match the one in Telegram widget)
 // 	telegramCookieName: The name of the cookie to store the Telegram user ID in, e.g. "tg_auth"
 func NewTelegramAuth(botToken, authUrl, checkAuthUrl string) TelegramAuth {
-	return TelegramAuth{
+	return TelegramAuthImpl{
 		BotToken:           botToken,
 		AuthUrl:            authUrl,
 		CheckAuthUrl:       checkAuthUrl,
@@ -44,7 +57,7 @@ func NewTelegramAuth(botToken, authUrl, checkAuthUrl string) TelegramAuth {
 
 // CheckAuth Checks if the user has successfully logged in with Telegram. It will return the
 // json string of the user data if the user is logged in, otherwise it will return error.
-func (t TelegramAuth) CheckAuth(params map[string][]string) (bool, error) {
+func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
 	expectedHash := calculateVerificationHash(params, t.BotToken)
 
 	checkHash := params["hash"][0]
@@ -69,7 +82,7 @@ func (t TelegramAuth) CheckAuth(params map[string][]string) (bool, error) {
 }
 
 // GetParamsFromCookie returns the params from the cookie or error if no cookie present
-func (t TelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]string, error) {
+func (t TelegramAuthImpl) GetParamsFromCookie(req *http.Request) (map[string][]string, error) {
 	// Get the cookie
 	cookie, err := req.Cookie(t.TelegramCookieName)
 	if err != nil {
@@ -81,7 +94,7 @@ func (t TelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]strin
 }
 
 // SetCookie sets the cookie for the user from the params
-func (t TelegramAuth) SetCookie(w http.ResponseWriter, params map[string][]string) error {
+func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params map[string][]string) error {
 	cookie, err2 := t.createCookie(params)
 	if err2 != nil {
 		return err2
@@ -92,7 +105,7 @@ func (t TelegramAuth) SetCookie(w http.ResponseWriter, params map[string][]strin
 	return nil
 }
 
-func (t TelegramAuth) createCookie(params map[string][]string) (*http.Cookie, error) {
+func (t TelegramAuthImpl) createCookie(params map[string][]string) (*http.Cookie, error) {
 	j, err := json.Marshal(params)
 	if err != nil {
 		// This should practically never happen.
@@ -108,7 +121,7 @@ func (t TelegramAuth) createCookie(params map[string][]string) (*http.Cookie, er
 	return cookie, nil
 }
 
-func (t TelegramAuth) getParamsFromCookie(value string) (map[string][]string, error) {
+func (t TelegramAuthImpl) getParamsFromCookie(value string) (map[string][]string, error) {
 	data, err := url.QueryUnescape(value)
 	if err != nil {
 		return nil, fmt.Errorf("error unescaping cookie value: %s", err)
