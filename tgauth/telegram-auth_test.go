@@ -111,3 +111,26 @@ func TestCalculateVerificationHash(t *testing.T) {
 	// the implementation is broken. See also: https://xkcd.com/221/
 	a.Equal(t, "da26696b03d7e7d67ebe4388fa133425b588b16fc40210e8656fb648eadecd0f", hash)
 }
+
+func TestParamsToInfo(t *testing.T) {
+	auth := NewTelegramAuthImpl()
+	params := map[string][]string{
+		"id":         {"123"},
+		"first_name": {"John"},
+		"username":   {"john"},
+		"photo_url":  {"http://example.com/photo.jpg"},
+		"auth_date":  {"1234567890"},
+		"hash":       {"1234567890"},
+	}
+
+	info, err := auth.GetUserInfo(params)
+
+	a.Nil(t, err)
+
+	a.Equal(t, "John", info.FirstName)
+	a.Equal(t, "john", info.UserName)
+	a.Equal(t, "http://example.com/photo.jpg", info.PhotoURL)
+
+	err = paramsToInfo(map[string][]string{}, info)
+	a.NotNil(t, err)
+}

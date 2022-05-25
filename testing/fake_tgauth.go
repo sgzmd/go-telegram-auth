@@ -7,16 +7,25 @@ import (
 )
 
 type FakeTelegramAuth struct {
-	Auth tgauth.TelegramAuthImpl
-	Pass bool
+	Auth     tgauth.TelegramAuthImpl
+	UserName string
+	Pass     bool
 }
 
-// Implements TelegramAuth.SetCookie method for FakeTelegramAuth
+func (f FakeTelegramAuth) GetUserInfo(params map[string][]string) (*tgauth.UserInfo, error) {
+	return &tgauth.UserInfo{
+		UserName:  f.UserName,
+		FirstName: f.UserName,
+		PhotoURL:  "https://www.google.com/s2/favicons?domain=google.com&sz=64",
+	}, nil
+}
+
+// SetCookie Implements TelegramAuth.SetCookie method for FakeTelegramAuth
 func (f FakeTelegramAuth) SetCookie(w http.ResponseWriter, params map[string][]string) error {
 	return nil
 }
 
-// Implements TelegramAuth.GetParamsFromCookie method for FakeTelegramAuth
+// GetParamsFromCookie Implements TelegramAuth.GetParamsFromCookie method for FakeTelegramAuth
 func (f FakeTelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]string, error) {
 	params := map[string][]string{
 		"id":         {"123"},
@@ -30,11 +39,11 @@ func (f FakeTelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]s
 	return params, nil
 }
 
-// Implements TelegramAuth.CheckAuth method for FakeTelegramAuth
+// CheckAuth Implements TelegramAuth.CheckAuth method for FakeTelegramAuth
 func (f FakeTelegramAuth) CheckAuth(params map[string][]string) (bool, error) {
 	return f.Pass, nil
 }
 
-func NewFakeTelegramAuth(pass bool) tgauth.TelegramAuth {
-	return FakeTelegramAuth{Pass: pass, Auth: tgauth.TelegramAuthImpl{}}
+func NewFakeTelegramAuth(pass bool, username string) tgauth.TelegramAuth {
+	return FakeTelegramAuth{Pass: pass, UserName: username, Auth: tgauth.TelegramAuthImpl{}}
 }

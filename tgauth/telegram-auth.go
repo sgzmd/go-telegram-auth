@@ -19,11 +19,21 @@ const (
 	DefaultCookieName = "tg_auth"
 )
 
+type UserInfo struct {
+	UserName  string
+	FirstName string
+	PhotoURL  string
+	Id        int64
+}
+
 // Main interface for Telegram authentication.
 type TelegramAuth interface {
 	// CheckAuth checks for a given set of params (usually from a request) if the user has successfully logged in
 	// with Telegram. Returns true/false or error if invalid data.
 	CheckAuth(params map[string][]string) (bool, error)
+
+	// GetUserInfo returns UserInfo from the map of params.
+	GetUserInfo(params map[string][]string) (*UserInfo, error)
 
 	// GetParamsFromCookie returns the params from the cookie or error if no cookie present
 	GetParamsFromCookie(req *http.Request) (map[string][]string, error)
@@ -39,7 +49,7 @@ type TelegramAuthImpl struct {
 	TelegramCookieName string
 
 	// After how long should the user be logged out? Defaults to 24 hours.
-	ExpireTime         time.Duration
+	ExpireTime time.Duration
 }
 
 // NewTelegramAuth creates a new TelegramAuth instance.
@@ -81,6 +91,17 @@ func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// GetUserInfo implements GetUserInfo from the interface
+func (t TelegramAuthImpl) GetUserInfo(params map[string][]string) (*UserInfo, error) {
+	ui := UserInfo{}
+	err := paramsToInfo(params, &ui)
+	if err != nil {
+		return nil, err
+	} else {
+		return &ui, nil
+	}
 }
 
 // GetParamsFromCookie returns the params from the cookie or error if no cookie present
@@ -174,4 +195,36 @@ func calculateVerificationHash(params map[string][]string, token string) string 
 	expectedHash := hex.EncodeToString(hm.Sum(nil))
 
 	return expectedHash
+}
+
+// paramsToInfo converts params map to UserInfo
+func paramsToInfo(params map[string][]string, ui *UserInfo) error {
+	if len(params["id"]) == 0 {
+		return fmt.Errorf("no id in params: %+v", params)
+	}
+
+	uid, err := strconv.ParseInt(params["id"][0], 10, 64)
+	if err != nil {
+		return fmt.Errorf("error parsing id: %s", err)
+	}
+	ui.Id = uid
+	if len(params["username"]) > 0 {
+		ui.UserName = params["username"][0]
+	} else {
+		return fmt.Errorf("username is empty: %+v", params)
+	}
+
+	if len(params["photo_url"]) > 0 {
+		ui.PhotoURL = params["photo_url"][0]
+	}
+
+	if len(params["first_name"]) > 0 {
+		ui.FirstName = params["first_name"][0]
+	}
+
+	if len(params["photo_url"]) > 0 {
+		ui.PhotoURL = params["photo_url"][0]
+	}
+
+	return nil
 }

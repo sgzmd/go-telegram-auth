@@ -97,7 +97,7 @@ func HandleLoginPage(writer http.ResponseWriter, request *http.Request) {
 func HandleIndexPage(writer http.ResponseWriter, request *http.Request) {
 	params, err := Auth.GetParamsFromCookie(request)
 	if err != nil {
-		log.Printf("Unable to get params from cookie: %+v", err)
+		log.Printf("Unable to get params from cookie: %+v", err) 
 		http.Redirect(writer, request, "/auth", http.StatusFound)
 		return
 	}
