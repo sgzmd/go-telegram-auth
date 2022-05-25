@@ -12,7 +12,7 @@ type FakeTelegramAuth struct {
 	Pass     bool
 }
 
-func (f FakeTelegramAuth) GetUserInfo(params map[string][]string) (*tgauth.UserInfo, error) {
+func (f FakeTelegramAuth) GetUserInfo(_ map[string][]string) (*tgauth.UserInfo, error) {
 	return &tgauth.UserInfo{
 		UserName:  f.UserName,
 		FirstName: f.UserName,
@@ -26,7 +26,7 @@ func (f FakeTelegramAuth) SetCookie(w http.ResponseWriter, params map[string][]s
 }
 
 // GetParamsFromCookie Implements TelegramAuth.GetParamsFromCookie method for FakeTelegramAuth
-func (f FakeTelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]string, error) {
+func (f FakeTelegramAuth) GetParamsFromCookie(_ *http.Request) (map[string][]string, error) {
 	params := map[string][]string{
 		"id":         {"123"},
 		"first_name": {"John"},
@@ -40,7 +40,7 @@ func (f FakeTelegramAuth) GetParamsFromCookie(req *http.Request) (map[string][]s
 }
 
 // CheckAuth Implements TelegramAuth.CheckAuth method for FakeTelegramAuth
-func (f FakeTelegramAuth) CheckAuth(params map[string][]string) (bool, error) {
+func (f FakeTelegramAuth) CheckAuth(_ map[string][]string) (bool, error) {
 	return f.Pass, nil
 }
 
