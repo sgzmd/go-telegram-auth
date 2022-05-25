@@ -11,8 +11,18 @@ import (
 	a "github.com/stretchr/testify/assert"
 )
 
+func NewTelegramAuthImpl() TelegramAuthImpl {
+	return TelegramAuthImpl{
+		BotToken:           "bot_token",
+		AuthUrl:            "/auth",
+		CheckAuthUrl:       "/check",
+		TelegramCookieName: DefaultCookieName,
+		ExpireTime:         DefaultExpireTime,
+	}
+}
+
 func Test_getParamsFromCookie(t *testing.T) {
-	auth := NewTelegramAuth("bot_token", "/auth", "/check")
+	auth := NewTelegramAuthImpl()
 	params := map[string][]string{
 		"id":         {"123"},
 		"first_name": {"John"},
@@ -32,7 +42,7 @@ func Test_getParamsFromCookie(t *testing.T) {
 }
 
 func TestTelegramAuth_SetCookie_GetParamsFromCookie(t *testing.T) {
-	auth := NewTelegramAuth("bot_token", "/auth", "/check")
+	auth := NewTelegramAuthImpl()
 	params := map[string][]string{
 		"id":         {"123"},
 		"first_name": {"John"},
@@ -62,7 +72,7 @@ func TestTelegramAuth_SetCookie_GetParamsFromCookie(t *testing.T) {
 }
 
 func TestCreateCookie(t *testing.T) {
-	auth := NewTelegramAuth("bot_token", "/auth", "/check")
+	auth := NewTelegramAuthImpl()
 	params := map[string][]string{
 		"id":         {"123"},
 		"first_name": {"John"},
