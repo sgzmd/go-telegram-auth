@@ -134,3 +134,11 @@ func TestParamsToInfo(t *testing.T) {
 	err = paramsToInfo(map[string][]string{}, info)
 	a.NotNil(t, err)
 }
+
+func TestTelegramAuthImpl_CheckAuth(t *testing.T) {
+	auth := NewTelegramAuthImpl()
+	params := make(map[string][]string, 1)
+	ok, err := auth.CheckAuth(params)
+	a.False(t, ok)
+	a.NotNil(t, err)
+}

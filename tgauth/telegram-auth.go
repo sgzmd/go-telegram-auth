@@ -72,25 +72,29 @@ func NewTelegramAuth(botToken, authUrl, checkAuthUrl string) TelegramAuth {
 func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
 	expectedHash := calculateVerificationHash(params, t.BotToken)
 
-	checkHash := params["hash"][0]
+	if checkHashArr, ok := params["hash"]; ok {
+		checkHash := checkHashArr[0]
 
-	// If the hashes match, then the request was indeed from Telegram
-	if expectedHash != checkHash {
-		return false, nil
+		// If the hashes match, then the request was indeed from Telegram
+		if expectedHash != checkHash {
+			return false, nil
+		}
+
+		// Now let's verify auth_date to check that the request is recent
+		timestamp, err := strconv.ParseInt(params["auth_date"][0], 10, 64)
+		if err != nil {
+			return false, err
+		}
+
+		// User must login every 24 hours
+		if timestamp < (time.Now().Unix() - int64(24*time.Hour.Seconds())) {
+			return false, fmt.Errorf("user is not logged in for more than 24 hours")
+		}
+
+		return true, nil
+	} else {
+		return false, fmt.Errorf("no 'hash' element in params")
 	}
-
-	// Now let's verify auth_date to check that the request is recent
-	timestamp, err := strconv.ParseInt(params["auth_date"][0], 10, 64)
-	if err != nil {
-		return false, err
-	}
-
-	// User must login every 24 hours
-	if timestamp < (time.Now().Unix() - int64(24*time.Hour.Seconds())) {
-		return false, fmt.Errorf("user is not logged in for more than 24 hours")
-	}
-
-	return true, nil
 }
 
 // GetUserInfo implements GetUserInfo from the interface
