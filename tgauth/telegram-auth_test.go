@@ -32,11 +32,11 @@ func Test_getParamsFromCookie(t *testing.T) {
 		"hash":       {"1234567890"},
 	}
 
-	cookie, err := auth.createCookie(params)
+	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
 	a.NotNil(t, cookie)
 
-	params2, err := auth.getParamsFromCookie(cookie.Value)
+	params2, err := auth.GetParamsFromCookieValue(cookie.Value)
 	a.Nil(t, err)
 	a.Equal(t, params, params2)
 }
@@ -52,7 +52,7 @@ func TestTelegramAuth_SetCookie_GetParamsFromCookie(t *testing.T) {
 		"hash":       {"1234567890"},
 	}
 
-	cookie, err := auth.createCookie(params)
+	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
 	a.NotNil(t, cookie)
 
@@ -82,7 +82,7 @@ func TestCreateCookie(t *testing.T) {
 		"hash":       {"1234567890"},
 	}
 
-	cookie, err := auth.createCookie(params)
+	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
 	a.NotNil(t, cookie)
 

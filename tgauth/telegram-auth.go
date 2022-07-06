@@ -40,6 +40,12 @@ type TelegramAuth interface {
 
 	// SetCookie sets the cookie for the user from the params
 	SetCookie(w http.ResponseWriter, params map[string][]string) error
+
+	// CreateCookie creates a cookie which the caller can set directly
+	CreateCookie(params map[string][]string) (*http.Cookie, error)
+
+	// GetParamsFromCookieValue extracts params map from the value of the cookie, created by CreateCookie
+	GetParamsFromCookieValue(value string) (map[string][]string, error)
 }
 
 type TelegramAuthImpl struct {
@@ -117,12 +123,12 @@ func (t TelegramAuthImpl) GetParamsFromCookie(req *http.Request) (map[string][]s
 	}
 
 	// Get the params from the cookie
-	return t.getParamsFromCookie(cookie.Value)
+	return t.GetParamsFromCookieValue(cookie.Value)
 }
 
 // SetCookie sets the cookie for the user from the params
 func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params map[string][]string) error {
-	cookie, err2 := t.createCookie(params)
+	cookie, err2 := t.CreateCookie(params)
 	if err2 != nil {
 		return err2
 	}
@@ -132,7 +138,7 @@ func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params map[string][]s
 	return nil
 }
 
-func (t TelegramAuthImpl) createCookie(params map[string][]string) (*http.Cookie, error) {
+func (t TelegramAuthImpl) CreateCookie(params map[string][]string) (*http.Cookie, error) {
 	j, err := json.Marshal(params)
 	if err != nil {
 		// This should practically never happen.
@@ -148,7 +154,7 @@ func (t TelegramAuthImpl) createCookie(params map[string][]string) (*http.Cookie
 	return cookie, nil
 }
 
-func (t TelegramAuthImpl) getParamsFromCookie(value string) (map[string][]string, error) {
+func (t TelegramAuthImpl) GetParamsFromCookieValue(value string) (map[string][]string, error) {
 	data, err := url.QueryUnescape(value)
 	if err != nil {
 		return nil, fmt.Errorf("error unescaping cookie value: %s", err)
