@@ -12,17 +12,22 @@ type FakeTelegramAuth struct {
 	Pass     bool
 }
 
-func (f FakeTelegramAuth) CreateCookie(params map[string][]string) (*http.Cookie, error) {
+func (f FakeTelegramAuth) GetCookieValue(_ tgauth.Params) (string, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f FakeTelegramAuth) GetParamsFromCookieValue(value string) (map[string][]string, error) {
+func (f FakeTelegramAuth) CreateCookie(_ tgauth.Params) (*http.Cookie, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f FakeTelegramAuth) GetUserInfo(_ map[string][]string) (*tgauth.UserInfo, error) {
+func (f FakeTelegramAuth) GetParamsFromCookieValue(value string) (tgauth.Params, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f FakeTelegramAuth) GetUserInfo(_ tgauth.Params) (*tgauth.UserInfo, error) {
 	return &tgauth.UserInfo{
 		UserName:  f.UserName,
 		FirstName: f.UserName,
@@ -31,26 +36,26 @@ func (f FakeTelegramAuth) GetUserInfo(_ map[string][]string) (*tgauth.UserInfo, 
 }
 
 // SetCookie Implements TelegramAuth.SetCookie method for FakeTelegramAuth
-func (f FakeTelegramAuth) SetCookie(w http.ResponseWriter, params map[string][]string) error {
+func (f FakeTelegramAuth) SetCookie(_ http.ResponseWriter, _ tgauth.Params) error {
 	return nil
 }
 
 // GetParamsFromCookie Implements TelegramAuth.GetParamsFromCookie method for FakeTelegramAuth
-func (f FakeTelegramAuth) GetParamsFromCookie(_ *http.Request) (map[string][]string, error) {
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"da26696b03d7e7d67ebe4388fa133425b588b16fc40210e8656fb648eadecd0f"},
+func (f FakeTelegramAuth) GetParamsFromCookie(_ *http.Request) (tgauth.Params, error) {
+	var params = tgauth.Params{
+		"id":         "123",
+		"first_name": "John",
+		"username":   "john",
+		"photo_url":  "http://example.com/photo.jpg",
+		"auth_date":  "1234567890",
+		"hash":       "1234567890",
 	}
 
 	return params, nil
 }
 
 // CheckAuth Implements TelegramAuth.CheckAuth method for FakeTelegramAuth
-func (f FakeTelegramAuth) CheckAuth(_ map[string][]string) (bool, error) {
+func (f FakeTelegramAuth) CheckAuth(_ tgauth.Params) (bool, error) {
 	return f.Pass, nil
 }
 

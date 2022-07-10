@@ -11,6 +11,15 @@ import (
 	a "github.com/stretchr/testify/assert"
 )
 
+var params = Params{
+	"id":         "123",
+	"first_name": "John",
+	"username":   "john",
+	"photo_url":  "http://example.com/photo.jpg",
+	"auth_date":  "1234567890",
+	"hash":       "1234567890",
+}
+
 func NewTelegramAuthImpl() TelegramAuthImpl {
 	return TelegramAuthImpl{
 		BotToken:           "bot_token",
@@ -23,14 +32,6 @@ func NewTelegramAuthImpl() TelegramAuthImpl {
 
 func Test_getParamsFromCookie(t *testing.T) {
 	auth := NewTelegramAuthImpl()
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"1234567890"},
-	}
 
 	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
@@ -41,16 +42,16 @@ func Test_getParamsFromCookie(t *testing.T) {
 	a.Equal(t, params, params2)
 }
 
+func TestTelegramAuthImpl_GetUserInfo_BadData(t *testing.T) {
+	auth := NewTelegramAuthImpl()
+	p2 := Params{}
+	ui, err := auth.GetUserInfo(p2)
+	a.Nil(t, ui)
+	a.NotNil(t, err)
+}
+
 func TestTelegramAuth_SetCookie_GetParamsFromCookie(t *testing.T) {
 	auth := NewTelegramAuthImpl()
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"1234567890"},
-	}
 
 	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
@@ -73,20 +74,11 @@ func TestTelegramAuth_SetCookie_GetParamsFromCookie(t *testing.T) {
 
 func TestCreateCookie(t *testing.T) {
 	auth := NewTelegramAuthImpl()
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"1234567890"},
-	}
-
 	cookie, err := auth.CreateCookie(params)
 	a.Nil(t, err)
 	a.NotNil(t, cookie)
 
-	p2 := map[string][]string{}
+	p2 := Params{}
 	j, e := url.QueryUnescape(cookie.Value)
 	a.Nil(t, e)
 	json.Unmarshal([]byte(j), &p2)
@@ -95,14 +87,6 @@ func TestCreateCookie(t *testing.T) {
 }
 
 func TestCalculateVerificationHash(t *testing.T) {
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"1234567890"},
-	}
 
 	hash := calculateVerificationHash(params, "bot_token")
 
@@ -114,14 +98,6 @@ func TestCalculateVerificationHash(t *testing.T) {
 
 func TestParamsToInfo(t *testing.T) {
 	auth := NewTelegramAuthImpl()
-	params := map[string][]string{
-		"id":         {"123"},
-		"first_name": {"John"},
-		"username":   {"john"},
-		"photo_url":  {"http://example.com/photo.jpg"},
-		"auth_date":  {"1234567890"},
-		"hash":       {"1234567890"},
-	}
 
 	info, err := auth.GetUserInfo(params)
 
@@ -131,13 +107,13 @@ func TestParamsToInfo(t *testing.T) {
 	a.Equal(t, "john", info.UserName)
 	a.Equal(t, "http://example.com/photo.jpg", info.PhotoURL)
 
-	err = paramsToInfo(map[string][]string{}, info)
+	err = paramsToInfo(map[string]string{}, info)
 	a.NotNil(t, err)
 }
 
 func TestTelegramAuthImpl_CheckAuth(t *testing.T) {
 	auth := NewTelegramAuthImpl()
-	params := make(map[string][]string, 1)
+	params := make(map[string]string, 1)
 	ok, err := auth.CheckAuth(params)
 	a.False(t, ok)
 	a.NotNil(t, err)

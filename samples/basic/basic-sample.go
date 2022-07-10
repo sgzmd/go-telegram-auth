@@ -63,9 +63,9 @@ func HandleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := make(map[string][]string)
+	params := make(map[string]string)
 	for k, v := range r.Form {
-		params[k] = v
+		params[k] = v[0]
 	}
 
 	ok, err := Auth.CheckAuth(params)
@@ -97,7 +97,7 @@ func HandleLoginPage(writer http.ResponseWriter, request *http.Request) {
 func HandleIndexPage(writer http.ResponseWriter, request *http.Request) {
 	params, err := Auth.GetParamsFromCookie(request)
 	if err != nil {
-		log.Printf("Unable to get params from cookie: %+v", err) 
+		log.Printf("Unable to get params from cookie: %+v", err)
 		http.Redirect(writer, request, "/auth", http.StatusFound)
 		return
 	}
@@ -113,5 +113,5 @@ func HandleIndexPage(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	writer.Write([]byte("<html><body><h1>Welcome, " + params["first_name"][0] + "</h1></body></html>"))
+	writer.Write([]byte("<html><body><h1>Welcome, " + params["first_name"] + "</h1></body></html>"))
 }

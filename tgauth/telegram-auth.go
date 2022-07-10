@@ -19,35 +19,6 @@ const (
 	DefaultCookieName = "tg_auth"
 )
 
-type UserInfo struct {
-	UserName  string
-	FirstName string
-	PhotoURL  string
-	Id        int64
-}
-
-// Main interface for Telegram authentication.
-type TelegramAuth interface {
-	// CheckAuth checks for a given set of params (usually from a request) if the user has successfully logged in
-	// with Telegram. Returns true/false or error if invalid data.
-	CheckAuth(params map[string][]string) (bool, error)
-
-	// GetUserInfo returns UserInfo from the map of params.
-	GetUserInfo(params map[string][]string) (*UserInfo, error)
-
-	// GetParamsFromCookie returns the params from the cookie or error if no cookie present
-	GetParamsFromCookie(req *http.Request) (map[string][]string, error)
-
-	// SetCookie sets the cookie for the user from the params
-	SetCookie(w http.ResponseWriter, params map[string][]string) error
-
-	// CreateCookie creates a cookie which the caller can set directly
-	CreateCookie(params map[string][]string) (*http.Cookie, error)
-
-	// GetParamsFromCookieValue extracts params map from the value of the cookie, created by CreateCookie
-	GetParamsFromCookieValue(value string) (map[string][]string, error)
-}
-
 type TelegramAuthImpl struct {
 	BotToken           string
 	AuthUrl            string
@@ -75,11 +46,10 @@ func NewTelegramAuth(botToken, authUrl, checkAuthUrl string) TelegramAuth {
 
 // CheckAuth Checks if the user has successfully logged in with Telegram. It will return the
 // json string of the user data if the user is logged in, otherwise it will return error.
-func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
+func (t TelegramAuthImpl) CheckAuth(params Params) (bool, error) {
 	expectedHash := calculateVerificationHash(params, t.BotToken)
 
-	if checkHashArr, ok := params["hash"]; ok {
-		checkHash := checkHashArr[0]
+	if checkHash, ok := params["hash"]; ok {
 
 		// If the hashes match, then the request was indeed from Telegram
 		if expectedHash != checkHash {
@@ -87,7 +57,7 @@ func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
 		}
 
 		// Now let's verify auth_date to check that the request is recent
-		timestamp, err := strconv.ParseInt(params["auth_date"][0], 10, 64)
+		timestamp, err := strconv.ParseInt(params["auth_date"], 10, 64)
 		if err != nil {
 			return false, err
 		}
@@ -104,7 +74,7 @@ func (t TelegramAuthImpl) CheckAuth(params map[string][]string) (bool, error) {
 }
 
 // GetUserInfo implements GetUserInfo from the interface
-func (t TelegramAuthImpl) GetUserInfo(params map[string][]string) (*UserInfo, error) {
+func (t TelegramAuthImpl) GetUserInfo(params Params) (*UserInfo, error) {
 	ui := UserInfo{}
 	err := paramsToInfo(params, &ui)
 	if err != nil {
@@ -115,7 +85,7 @@ func (t TelegramAuthImpl) GetUserInfo(params map[string][]string) (*UserInfo, er
 }
 
 // GetParamsFromCookie returns the params from the cookie or error if no cookie present
-func (t TelegramAuthImpl) GetParamsFromCookie(req *http.Request) (map[string][]string, error) {
+func (t TelegramAuthImpl) GetParamsFromCookie(req *http.Request) (Params, error) {
 	// Get the cookie
 	cookie, err := req.Cookie(t.TelegramCookieName)
 	if err != nil {
@@ -127,7 +97,7 @@ func (t TelegramAuthImpl) GetParamsFromCookie(req *http.Request) (map[string][]s
 }
 
 // SetCookie sets the cookie for the user from the params
-func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params map[string][]string) error {
+func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params Params) error {
 	cookie, err2 := t.CreateCookie(params)
 	if err2 != nil {
 		return err2
@@ -138,7 +108,16 @@ func (t TelegramAuthImpl) SetCookie(w http.ResponseWriter, params map[string][]s
 	return nil
 }
 
-func (t TelegramAuthImpl) CreateCookie(params map[string][]string) (*http.Cookie, error) {
+func (t TelegramAuthImpl) GetCookieValue(params Params) (string, error) {
+	c, e := t.CreateCookie(params)
+	if e != nil {
+		return "", e
+	}
+
+	return c.Value, nil
+}
+
+func (t TelegramAuthImpl) CreateCookie(params Params) (*http.Cookie, error) {
 	j, err := json.Marshal(params)
 	if err != nil {
 		// This should practically never happen.
@@ -154,13 +133,13 @@ func (t TelegramAuthImpl) CreateCookie(params map[string][]string) (*http.Cookie
 	return cookie, nil
 }
 
-func (t TelegramAuthImpl) GetParamsFromCookieValue(value string) (map[string][]string, error) {
+func (t TelegramAuthImpl) GetParamsFromCookieValue(value string) (Params, error) {
 	data, err := url.QueryUnescape(value)
 	if err != nil {
 		return nil, fmt.Errorf("error unescaping cookie value: %s", err)
 	}
 
-	params := make(map[string][]string)
+	params := make(map[string]string)
 
 	e := json.Unmarshal([]byte(data), &params)
 	if e != nil {
@@ -173,7 +152,7 @@ func (t TelegramAuthImpl) GetParamsFromCookieValue(value string) (map[string][]s
 // calculateVerificationHash: To check telegram login, we need to concat with "\n" all received fields _except_ hash
 // sorted in alphabetical order and then calculate hash using sha256, with the bot api key hash
 // as the secret.
-func calculateVerificationHash(params map[string][]string, token string) string {
+func calculateVerificationHash(params Params, token string) string {
 	keys := make([]string, 0)
 	for k := range params {
 		if k != "hash" {
@@ -184,7 +163,7 @@ func calculateVerificationHash(params map[string][]string, token string) string 
 	dataCheckArray := make([]string, len(keys))
 	for i, k := range keys {
 		// e.g. username=the_user
-		dataCheckArray[i] = k + "=" + params[k][0]
+		dataCheckArray[i] = k + "=" + params[k]
 	}
 
 	// strings in array should be sorted in alphabetical order
@@ -208,32 +187,32 @@ func calculateVerificationHash(params map[string][]string, token string) string 
 }
 
 // paramsToInfo converts params map to UserInfo
-func paramsToInfo(params map[string][]string, ui *UserInfo) error {
+func paramsToInfo(params Params, ui *UserInfo) error {
 	if len(params["id"]) == 0 {
 		return fmt.Errorf("no id in params: %+v", params)
 	}
 
-	uid, err := strconv.ParseInt(params["id"][0], 10, 64)
+	uid, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing id: %s", err)
 	}
 	ui.Id = uid
 	if len(params["username"]) > 0 {
-		ui.UserName = params["username"][0]
+		ui.UserName = params["username"]
 	} else {
 		return fmt.Errorf("username is empty: %+v", params)
 	}
 
 	if len(params["photo_url"]) > 0 {
-		ui.PhotoURL = params["photo_url"][0]
+		ui.PhotoURL = params["photo_url"]
 	}
 
 	if len(params["first_name"]) > 0 {
-		ui.FirstName = params["first_name"][0]
+		ui.FirstName = params["first_name"]
 	}
 
 	if len(params["photo_url"]) > 0 {
-		ui.PhotoURL = params["photo_url"][0]
+		ui.PhotoURL = params["photo_url"]
 	}
 
 	return nil
