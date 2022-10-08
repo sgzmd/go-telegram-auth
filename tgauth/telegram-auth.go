@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -27,6 +28,13 @@ type TelegramAuthImpl struct {
 
 	// After how long should the user be logged out? Defaults to 24 hours.
 	ExpireTime time.Duration
+
+	Debug bool
+}
+
+func (t TelegramAuthImpl) SetDebug(debug bool) error {
+	t.Debug = debug
+	return nil
 }
 
 // NewTelegramAuth creates a new TelegramAuth instance.
@@ -49,17 +57,36 @@ func NewTelegramAuth(botToken, authUrl, checkAuthUrl string) TelegramAuth {
 func (t TelegramAuthImpl) CheckAuth(params Params) (bool, error) {
 	expectedHash := calculateVerificationHash(params, t.BotToken)
 
+	if t.Debug {
+		log.Printf("Calculated hash: %s for params %+v", expectedHash, params)
+	}
+
 	if checkHash, ok := params["hash"]; ok {
 
 		// If the hashes match, then the request was indeed from Telegram
 		if expectedHash != checkHash {
+
+			if t.Debug {
+				log.Printf("Hash mismatch: %s != %s", expectedHash, checkHash)
+			}
+
 			return false, nil
 		}
 
 		// Now let's verify auth_date to check that the request is recent
 		timestamp, err := strconv.ParseInt(params["auth_date"], 10, 64)
 		if err != nil {
+
+			if t.Debug {
+				log.Printf("Error parsing auth_date: %s", params["auth_date"])
+			}
+
 			return false, err
+		}
+
+		if t.Debug {
+			// prints to log timestamp in string format
+			log.Printf("Auth date: %s", time.Unix(timestamp, 0).String())
 		}
 
 		// User must login every 24 hours
@@ -67,6 +94,9 @@ func (t TelegramAuthImpl) CheckAuth(params Params) (bool, error) {
 			return false, fmt.Errorf("user is not logged in for more than 24 hours")
 		}
 
+		if t.Debug {
+			log.Printf("User is logged in")
+		}
 		return true, nil
 	} else {
 		return false, fmt.Errorf("no 'hash' element in params")

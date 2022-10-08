@@ -34,4 +34,7 @@ type TelegramAuth interface {
 
 	// GetCookieValue returns cookie value to be set by the caller
 	GetCookieValue(params Params) (string, error)
+
+	// SetDebug sets the debug flag for verbose logging
+	SetDebug(debug bool) error
 }

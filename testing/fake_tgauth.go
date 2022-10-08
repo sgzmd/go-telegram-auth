@@ -12,6 +12,11 @@ type FakeTelegramAuth struct {
 	Pass     bool
 }
 
+func (f FakeTelegramAuth) SetDebug(debug bool) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (f FakeTelegramAuth) GetCookieValue(_ tgauth.Params) (string, error) {
 	//TODO implement me
 	panic("implement me")
