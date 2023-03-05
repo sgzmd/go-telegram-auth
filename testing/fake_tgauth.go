@@ -12,6 +12,15 @@ type FakeTelegramAuth struct {
 	Pass     bool
 }
 
+var FAKE_PARAMS = tgauth.Params{
+	"id":         "123",
+	"first_name": "John",
+	"username":   "john",
+	"photo_url":  "http://example.com/photo.jpg",
+	"auth_date":  "1234567890",
+	"hash":       "1234567890",
+}
+
 func (f FakeTelegramAuth) SetDebug(debug bool) error {
 	//TODO implement me
 	panic("implement me")
@@ -28,8 +37,7 @@ func (f FakeTelegramAuth) CreateCookie(_ tgauth.Params) (*http.Cookie, error) {
 }
 
 func (f FakeTelegramAuth) GetParamsFromCookieValue(value string) (tgauth.Params, error) {
-	//TODO implement me
-	panic("implement me")
+	return FAKE_PARAMS, nil
 }
 
 func (f FakeTelegramAuth) GetUserInfo(_ tgauth.Params) (*tgauth.UserInfo, error) {
@@ -47,16 +55,7 @@ func (f FakeTelegramAuth) SetCookie(_ http.ResponseWriter, _ tgauth.Params) erro
 
 // GetParamsFromCookie Implements TelegramAuth.GetParamsFromCookie method for FakeTelegramAuth
 func (f FakeTelegramAuth) GetParamsFromCookie(_ *http.Request) (tgauth.Params, error) {
-	var params = tgauth.Params{
-		"id":         "123",
-		"first_name": "John",
-		"username":   "john",
-		"photo_url":  "http://example.com/photo.jpg",
-		"auth_date":  "1234567890",
-		"hash":       "1234567890",
-	}
-
-	return params, nil
+	return FAKE_PARAMS, nil
 }
 
 // CheckAuth Implements TelegramAuth.CheckAuth method for FakeTelegramAuth

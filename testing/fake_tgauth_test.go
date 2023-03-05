@@ -19,3 +19,10 @@ func TestFakeTgAuth(t *testing.T) {
 	assert.Nil(t, err2)
 	assert.False(t, ok2)
 }
+
+func TestGetFakeParams(t *testing.T) {
+	auth := NewFakeTelegramAuth(true, "username")
+	p, e := auth.GetParamsFromCookieValue("123")
+	assert.Nil(t, e)
+	assert.Equal(t, FAKE_PARAMS, p)
+}
